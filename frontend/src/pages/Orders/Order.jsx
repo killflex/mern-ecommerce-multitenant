@@ -215,10 +215,24 @@ const Order = () => {
           <div>
             <button
               type="button"
-              className="bg-pink-500 text-white w-full py-2"
+              className="bg-pink-500 text-white w-full py-2 mb-4"
               onClick={deliverHandler}
             >
               Mark As Delivered
+            </button>
+          </div>
+        )}
+
+        {order.isPaid && (
+          <div>
+            <button
+              type="button"
+              className="bg-blue-500 text-white w-full py-2"
+              onClick={() =>
+                window.open(`/api/orders/${orderId}/invoice`, "_blank")
+              }
+            >
+              Download Invoice
             </button>
           </div>
         )}

@@ -1,7 +1,9 @@
 import User from "../models/userModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import createToken from "../utils/createToken.js";
+import { sendVerificationEmail } from "../utils/emailService.js";
 
 const createUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
@@ -13,19 +15,35 @@ const createUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
   if (userExists) res.status(400).send("User already exists");
 
+  // Generate email verification token
+  const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+  const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const newUser = new User({ username, email, password: hashedPassword });
+  const newUser = new User({
+    username,
+    email,
+    password: hashedPassword,
+    emailVerificationToken,
+    emailVerificationExpires,
+    isEmailVerified: false,
+  });
 
   try {
     await newUser.save();
-    createToken(res, newUser._id);
+
+    // Send verification email
+    await sendVerificationEmail(email, username, emailVerificationToken);
 
     res.status(201).json({
       _id: newUser._id,
       username: newUser.username,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
+      isEmailVerified: newUser.isEmailVerified,
+      message:
+        "User created successfully. Please check your email to verify your account.",
     });
   } catch (error) {
     res.status(400);
@@ -48,6 +66,13 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 
     if (isPasswordValid) {
+      // Check if email is verified
+      if (!existingUser.isEmailVerified) {
+        return res.status(401).json({
+          message: "Please verify your email before logging in.",
+        });
+      }
+
       createToken(res, existingUser._id);
 
       res.status(201).json({
@@ -55,10 +80,70 @@ const loginUser = asyncHandler(async (req, res) => {
         username: existingUser.username,
         email: existingUser.email,
         isAdmin: existingUser.isAdmin,
+        isEmailVerified: existingUser.isEmailVerified,
       });
       return;
     }
   }
+});
+
+// Verify email function
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+
+  const user = await User.findOne({
+    emailVerificationToken: token,
+    emailVerificationExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      message: "Invalid or expired verification token",
+    });
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save();
+
+  res.status(200).json({
+    message: "Email verified successfully! You can now log in.",
+  });
+});
+
+// Resend verification email
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+
+  if (user.isEmailVerified) {
+    return res.status(400).json({
+      message: "Email is already verified",
+    });
+  }
+
+  // Generate new verification token
+  const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+  const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  user.emailVerificationToken = emailVerificationToken;
+  user.emailVerificationExpires = emailVerificationExpires;
+  await user.save();
+
+  // Send verification email
+  await sendVerificationEmail(email, user.username, emailVerificationToken);
+
+  res.status(200).json({
+    message: "Verification email sent successfully",
+  });
 });
 
 const logoutCurrentUser = asyncHandler(async (req, res) => {
@@ -177,4 +262,6 @@ export {
   deleteUserById,
   getUserById,
   updateUserById,
+  verifyEmail,
+  resendVerificationEmail,
 };

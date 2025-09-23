@@ -1,5 +1,7 @@
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
+import { generateInvoicePDF } from "../utils/pdfGenerator.js";
+import { sendInvoiceEmail } from "../utils/emailService.js";
 
 // Utility Function
 function calcPrices(orderItems) {
@@ -159,7 +161,10 @@ const findOrderById = async (req, res) => {
 
 const markOrderAsPaid = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "username email"
+    );
 
     if (order) {
       order.isPaid = true;
@@ -171,8 +176,24 @@ const markOrderAsPaid = async (req, res) => {
         email_address: req.body.payer.email_address,
       };
 
-      const updateOrder = await order.save();
-      res.status(200).json(updateOrder);
+      const updatedOrder = await order.save();
+
+      // Generate and send PDF invoice after successful payment
+      try {
+        const pdfBuffer = await generateInvoicePDF(updatedOrder);
+        await sendInvoiceEmail(
+          updatedOrder.user.email,
+          updatedOrder.user.username,
+          updatedOrder._id,
+          pdfBuffer
+        );
+        console.log(`Invoice sent successfully to ${updatedOrder.user.email}`);
+      } catch (emailError) {
+        console.error("Error sending invoice email:", emailError);
+        // Don't fail the payment process if email fails
+      }
+
+      res.status(200).json(updatedOrder);
     } else {
       res.status(404);
       throw new Error("Order not found");
@@ -201,6 +222,34 @@ const markOrderAsDelivered = async (req, res) => {
   }
 };
 
+const downloadInvoice = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate(
+      "user",
+      "username email"
+    );
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (!order.isPaid) {
+      return res.status(400).json({ error: "Order is not paid yet" });
+    }
+
+    const pdfBuffer = await generateInvoicePDF(order);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice-${order._id}.pdf`
+    );
+    res.send(pdfBuffer);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export {
   createOrder,
   getAllOrders,
@@ -211,4 +260,5 @@ export {
   findOrderById,
   markOrderAsPaid,
   markOrderAsDelivered,
+  downloadInvoice,
 };

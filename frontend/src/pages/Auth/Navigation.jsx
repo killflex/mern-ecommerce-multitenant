@@ -181,6 +181,14 @@ const Navigation = () => {
               </Link>
             </li>
             <li>
+              <Link
+                to="/user-orders"
+                className="block px-4 py-2 hover:bg-gray-100"
+              >
+                My Orders
+              </Link>
+            </li>
+            <li>
               <button
                 onClick={logoutHandler}
                 className="block w-full px-4 py-2 text-left hover:bg-gray-100"

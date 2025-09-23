@@ -35,7 +35,21 @@ const Login = () => {
       dispatch(setCredentials({ ...res }));
       navigate(redirect);
     } catch (err) {
-      toast.error(err?.data?.message || err.error);
+      const errorMessage = err?.data?.message || err.error;
+      toast.error(errorMessage);
+
+      // If email verification is required, show resend option
+      if (errorMessage.includes("verify your email")) {
+        toast.info(
+          <div>
+            <p>Please verify your email first.</p>
+            <Link to="/resend-verification" className="text-pink-300 underline">
+              Resend verification email
+            </Link>
+          </div>,
+          { autoClose: false }
+        );
+      }
     }
   };
 

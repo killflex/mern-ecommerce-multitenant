@@ -9,6 +9,8 @@ import {
   deleteUserById,
   getUserById,
   updateUserById,
+  verifyEmail,
+  resendVerificationEmail,
 } from "../controllers/userController.js";
 
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
@@ -22,6 +24,8 @@ router
 
 router.post("/auth", loginUser);
 router.post("/logout", logoutCurrentUser);
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
 
 router
   .route("/profile")

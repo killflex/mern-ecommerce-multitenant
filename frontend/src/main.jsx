@@ -11,9 +11,12 @@ import PrivateRoute from "./components/PrivateRoute";
 // Auth
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import EmailVerification from "./pages/Auth/EmailVerification";
+import ResendVerification from "./pages/Auth/ResendVerification";
 
 import AdminRoute from "./pages/Admin/AdminRoute";
 import Profile from "./pages/User/Profile";
+import UserOrder from "./pages/User/UserOrder";
 import UserList from "./pages/Admin/UserList";
 
 import CategoryList from "./pages/Admin/CategoryList";
@@ -41,6 +44,8 @@ const router = createBrowserRouter(
     <Route path="/" element={<App />}>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/verify-email/:token" element={<EmailVerification />} />
+      <Route path="/resend-verification" element={<ResendVerification />} />
       <Route index={true} path="/" element={<Home />} />
       <Route path="/favorite" element={<Favorites />} />
       <Route path="/product/:id" element={<ProductDetails />} />
@@ -50,6 +55,7 @@ const router = createBrowserRouter(
       {/* Registered users */}
       <Route path="" element={<PrivateRoute />}>
         <Route path="/profile" element={<Profile />} />
+        <Route path="/user-orders" element={<UserOrder />} />
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/placeorder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
