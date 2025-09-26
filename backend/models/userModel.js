@@ -24,6 +24,19 @@ const userSchema = mongoose.Schema(
       default: false,
     },
 
+    isVendor: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+
+    role: {
+      type: String,
+      required: true,
+      enum: ["customer", "vendor", "admin"],
+      default: "customer",
+    },
+
     isEmailVerified: {
       type: Boolean,
       default: false,

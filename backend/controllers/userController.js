@@ -41,6 +41,8 @@ const createUser = asyncHandler(async (req, res) => {
       username: newUser.username,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
+      isVendor: newUser.isVendor,
+      role: newUser.role,
       isEmailVerified: newUser.isEmailVerified,
       message:
         "User created successfully. Please check your email to verify your account.",
@@ -80,6 +82,8 @@ const loginUser = asyncHandler(async (req, res) => {
         username: existingUser.username,
         email: existingUser.email,
         isAdmin: existingUser.isAdmin,
+        isVendor: existingUser.isVendor,
+        role: existingUser.role,
         isEmailVerified: existingUser.isEmailVerified,
       });
       return;

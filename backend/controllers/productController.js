@@ -88,8 +88,17 @@ const fetchProducts = asyncHandler(async (req, res) => {
         }
       : {};
 
-    const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword }).limit(pageSize);
+    // Only show active products for customers
+    const filter = {
+      ...keyword,
+      isActive: true,
+    };
+
+    const count = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .populate("vendor", "businessName logo rating")
+      .populate("category", "name")
+      .limit(pageSize);
 
     res.json({
       products,
@@ -105,7 +114,13 @@ const fetchProducts = asyncHandler(async (req, res) => {
 
 const fetchProductById = asyncHandler(async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id)
+      .populate(
+        "vendor",
+        "businessName businessDescription logo rating reviewCount"
+      )
+      .populate("category", "name");
+
     if (product) {
       return res.json(product);
     } else {
@@ -120,10 +135,11 @@ const fetchProductById = asyncHandler(async (req, res) => {
 
 const fetchAllProducts = asyncHandler(async (req, res) => {
   try {
-    const products = await Product.find({})
+    const products = await Product.find({ isActive: true })
       .populate("category")
+      .populate("vendor", "businessName logo rating")
       .limit(12)
-      .sort({ createAt: -1 });
+      .sort({ createdAt: -1 });
 
     res.json(products);
   } catch (error) {

@@ -25,6 +25,12 @@ import ProductList from "./pages/Admin/ProductList";
 import AllProducts from "./pages/Admin/AllProducts";
 import ProductUpdate from "./pages/Admin/ProductUpdate";
 
+// Vendor components
+import VendorDashboard from "./pages/Vendor/VendorDashboard";
+import BecomeVendor from "./pages/Vendor/BecomeVendor";
+import ApplicationStatus from "./pages/Vendor/ApplicationStatus";
+import VendorApplications from "./pages/Admin/VendorApplications";
+
 import Home from "./pages/Home.jsx";
 import Favorites from "./pages/Products/Favorites.jsx";
 import ProductDetails from "./pages/Products/ProductDetails.jsx";
@@ -59,6 +65,11 @@ const router = createBrowserRouter(
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/placeorder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
+
+        {/* Vendor routes */}
+        <Route path="/become-vendor" element={<BecomeVendor />} />
+        <Route path="/application-status" element={<ApplicationStatus />} />
+        <Route path="/vendor/dashboard" element={<VendorDashboard />} />
       </Route>
 
       <Route path="/admin" element={<AdminRoute />}>
@@ -70,6 +81,7 @@ const router = createBrowserRouter(
         <Route path="product/update/:_id" element={<ProductUpdate />} />
         <Route path="orderlist" element={<OrderList />} />
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="vendor-applications" element={<VendorApplications />} />
       </Route>
     </Route>
   )

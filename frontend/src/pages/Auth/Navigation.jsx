@@ -127,7 +127,11 @@ const Navigation = () => {
         {dropdownOpen && userInfo && (
           <ul
             className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white text-gray-600 ${
-              !userInfo.isAdmin ? "-top-20" : "-top-80"
+              userInfo.isAdmin
+                ? "-top-96"
+                : userInfo.isVendor
+                ? "-top-40"
+                : "-top-20"
             } `}
           >
             {userInfo.isAdmin && (
@@ -137,7 +141,7 @@ const Navigation = () => {
                     to="/admin/dashboard"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
-                    Dashboard
+                    Admin Dashboard
                   </Link>
                 </li>
                 <li>
@@ -172,7 +176,55 @@ const Navigation = () => {
                     Users
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/admin/vendor-applications"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Vendor Applications
+                  </Link>
+                </li>
               </>
+            )}
+
+            {userInfo.isVendor && (
+              <>
+                <li>
+                  <Link
+                    to="/vendor/dashboard"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Vendor Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/vendor/products"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    My Products
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/vendor/orders"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    My Sales
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {!userInfo.isVendor && !userInfo.isAdmin && (
+              <li>
+                <Link
+                  to="/become-vendor"
+                  className="block px-4 py-2 hover:bg-gray-100 font-semibold text-pink-600"
+                >
+                  Become a Vendor
+                </Link>
+              </li>
             )}
 
             <li>
